@@ -1,11 +1,9 @@
 package com.github.krishantx.Cloud_Security.Controller;
+import com.github.krishantx.Cloud_Security.model.LoginModel;
 import com.github.krishantx.Cloud_Security.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.github.krishantx.Cloud_Security.service.SecurityService;
 
@@ -16,18 +14,20 @@ public class SecurityController {
     private SecurityService securityService;
 
     @PostMapping("/login")
-    public String login() {
-        String username = "krishant";
-        String password = "mfcj43ow";
-
-        return securityService.login(username, password);
+    public ResponseEntity<?> login(@RequestBody LoginModel loginModel) {
+        return securityService.login(loginModel);
     }
 
     @PostMapping("/signup")
-    public String signup(@RequestBody UserModel userModel) {
+    public ResponseEntity<?> signup(@RequestBody UserModel userModel) {
+        return securityService.signup(userModel);
 
-        return securityService.signUp(userModel);
+    }
 
+    @GetMapping("/secure-endpoint")
+    public String secure() {
+        return "Auth";
+        return "No auth";
     }
 
 }
