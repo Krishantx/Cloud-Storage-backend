@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.github.krishantx.Cloud_Security.model.UserModel;
@@ -21,10 +22,13 @@ public class SecurityService {
 
     @Autowired
     private JwtUtil jwtUtil;
+    private BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(11);
 
     public ResponseEntity<?> signup(UserModel userModel) {
         try {
             // Try to save the user to database
+            String password = bCryptPasswordEncoder.encode(userModel.getPassword());
+            userModel.setPassword(password);
             userRepo.save(userModel);
             return ResponseEntity.status(HttpStatus.CREATED).body(userModel);
         } catch (DataIntegrityViolationException e) {
@@ -38,9 +42,10 @@ public class SecurityService {
         // Check if user exists in the database
         Optional<UserModel> userModel = userRepo.findByUsername(loginModel.getUsername());
 
-        if (userModel.isEmpty())  return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect Username or Password");
+        if (userModel.isEmpty())  return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Username does not exist");
+
         // Check if the password entered is the same as that in the database
-        if (!userModel.get().getPassword().equals(loginModel.getPassword())) {
+        if (!bCryptPasswordEncoder.matches(loginModel.getPassword(), userModel.get().getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect username or password");
         }
 

@@ -23,6 +23,7 @@ public class UserModel {
         this.username = username.toLowerCase();
         this.password = password;
     }
+    public long getId() { return id; }
     public String getUsername() {
         return username;
     }

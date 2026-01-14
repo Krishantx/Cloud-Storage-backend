@@ -2,22 +2,25 @@ package com.github.krishantx.Cloud_Security.service;
 
 
 import com.github.krishantx.Cloud_Security.model.FileModel;
+import com.github.krishantx.Cloud_Security.model.UserModel;
 import com.github.krishantx.Cloud_Security.repo.FileRepo;
+import com.github.krishantx.Cloud_Security.repo.UserRepo;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -26,12 +29,29 @@ public class FileService {
     @Autowired
     private FileRepo fileRepo;
 
-    public ResponseEntity<Resource> downloadFile(int fileId) throws IOException {
+    @Autowired
+    private UserRepo userRepo;
+
+    @Autowired JwtUtil jwtUtil;
+
+    public ResponseEntity<?> downloadFile(HttpServletRequest req, int fileId) throws IOException {
         Optional<FileModel> fileModel = fileRepo.findById(fileId);
 
-        if (fileModel.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        String token = req.getHeader("Authentication").substring(7);
+        String username = jwtUtil.extractUsername(token);
+        Optional<UserModel> userModel = userRepo.findByUsername(username);
+
+
+        if (fileModel.isEmpty())
+            return ResponseEntity
+                    .notFound()
+                    .build();
+
+        if (!fileModel.get().getOwner().getUsername().equals(userModel.get().getUsername()))
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("The resource does not belong to the user");
+
 
 
         Path storage = Paths.get("storage").toAbsolutePath().normalize();
@@ -49,7 +69,6 @@ public class FileService {
         if (contentType == null) {
             contentType = "application/octet-stream";
         }
-        System.out.println(contentType);
 
         return ResponseEntity
                 .ok()
@@ -59,9 +78,16 @@ public class FileService {
                 .body(resource);
     }
 
-    public String uploadFile(MultipartFile multipartFile, String fileName) throws Exception {
+    public String uploadFile(HttpServletRequest req, MultipartFile multipartFile, String fileName) throws Exception {
+
+        //Figure out who uploaded the file
+        String token = req.getHeader("Authentication").substring(7);
+        String username = jwtUtil.extractUsername(token);
+
         //Create an entry in the database for the file and fetch that data
-        FileModel fileModel = new FileModel(fileName);
+        Optional<UserModel> owner = userRepo.findByUsername(username);
+        if (owner.isEmpty()) return "User not found";
+        FileModel fileModel = new FileModel(fileName, owner.get());
         FileModel model = fileRepo.save(fileModel);
 
         // Creates a directory called storage if it does  not exist
@@ -79,4 +105,9 @@ public class FileService {
         return "Success";
     }
 
+    public List<FileModel> myUploads(HttpServletRequest req) {
+        String token = req.getHeader("Authentication").substring(7);
+        String username = jwtUtil.extractUsername(token);
+        return fileRepo.findByOwnerUsername(username);
+    }
 }

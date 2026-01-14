@@ -1,9 +1,8 @@
 package com.github.krishantx.Cloud_Security.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Date;
 
@@ -14,6 +13,10 @@ public class FileModel {
     private int fileId;
     private String fileName;
     private Date lastModified;
+    @ManyToOne
+    @Autowired
+    @JsonIgnoreProperties({"password, username"})
+    private UserModel owner;
 
     public FileModel() {
     }
@@ -22,9 +25,18 @@ public class FileModel {
         this.fileId = fileId;
         this.lastModified = lastModified;
     }
+    public FileModel(String fileName, UserModel owner) {
+        this.fileName = fileName;
+        this.lastModified = new Date();
+        this.owner = owner;
+    }
     public FileModel(String fileName) {
         this.fileName = fileName;
         this.lastModified = new Date();
+    }
+
+    public UserModel getOwner() {
+        return owner;
     }
 
     public int getFileId() {

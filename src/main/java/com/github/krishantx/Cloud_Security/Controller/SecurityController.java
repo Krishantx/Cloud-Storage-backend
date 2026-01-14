@@ -27,7 +27,6 @@ public class SecurityController {
     @GetMapping("/secure-endpoint")
     public String secure() {
         return "Auth";
-        return "No auth";
     }
 
 }
