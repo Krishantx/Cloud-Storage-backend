@@ -25,7 +25,7 @@ public class FileService {
     private final UserRepo userRepo;
 
     @Autowired
-    private FileService (FileRepo fileRepo, UserRepo userRepo) {
+    public FileService (FileRepo fileRepo, UserRepo userRepo) {
         this.fileRepo = fileRepo;
         this.userRepo = userRepo;
     }

@@ -18,7 +18,7 @@ public class FileController {
     private final FileService fileService;
 
     @Autowired
-    private FileController(FileService fileService) {
+    public FileController(FileService fileService) {
         this.fileService = fileService;
     }
 

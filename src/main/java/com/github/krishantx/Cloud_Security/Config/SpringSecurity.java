@@ -24,7 +24,7 @@ public class SpringSecurity {
     private final CorsFilter corsFilter;
 
     @Autowired
-    private SpringSecurity(JwtFilter jwtFilter, CorsFilter corsFilter) {
+    public SpringSecurity(JwtFilter jwtFilter, CorsFilter corsFilter) {
         this.jwtFilter = jwtFilter;
         this.corsFilter = corsFilter;
     }
