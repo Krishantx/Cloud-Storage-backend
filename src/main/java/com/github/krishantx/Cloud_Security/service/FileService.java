@@ -5,6 +5,7 @@ import com.github.krishantx.Cloud_Security.model.FileModel;
 import com.github.krishantx.Cloud_Security.model.UserModel;
 import com.github.krishantx.Cloud_Security.repo.FileRepo;
 import com.github.krishantx.Cloud_Security.repo.UserRepo;
+import com.github.krishantx.Cloud_Security.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -32,7 +33,8 @@ public class FileService {
     @Autowired
     private UserRepo userRepo;
 
-    @Autowired JwtUtil jwtUtil;
+    @Autowired
+    JwtUtil jwtUtil;
 
     public ResponseEntity<?> downloadFile(HttpServletRequest req, int fileId) throws IOException {
         Optional<FileModel> fileModel = fileRepo.findById(fileId);
