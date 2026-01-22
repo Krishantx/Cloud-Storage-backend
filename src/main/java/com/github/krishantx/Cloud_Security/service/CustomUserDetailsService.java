@@ -3,31 +3,33 @@ package com.github.krishantx.Cloud_Security.service;
 import com.github.krishantx.Cloud_Security.model.UserModel;
 import com.github.krishantx.Cloud_Security.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.Collections;
+
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
+
+    private final UserRepo repo;
+
     @Autowired
-    private UserRepo userRepo;
+    public CustomUserDetailsService(UserRepo repo) {
+        this.repo = repo;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<UserModel> user = userRepo.findByUsername(username);
+        UserModel user = repo.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
 
-        if (user.isEmpty()) {
-            throw new UsernameNotFoundException("User not found");
-        }
-        return User.builder()
-                .username(user.get().getUsername())
-                .password(user.get().getPassword())
-                .roles("USER")
-                .build();
+        return new org.springframework.security.core.userdetails.User(
+                user.getUsername(),
+                user.getPassword(),
+                Collections.emptyList()
+        );
     }
-
 }
